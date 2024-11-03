@@ -2,18 +2,22 @@ import InputParser
 
 
 def printResult(tableArray):
-
     for tables in tableArray:
         print(tables.tableName)
         print("\tPrimary Key: ", tables.primaryKey)
-        print("\Candidate Keys: ", tables.candidateKey)
+        print("\tCandidate Keys: ", tables.candidateKey)
 
         for columns in tables.columns:
-            print("\t", columns)
+            print("\t - ", columns)
         print()
         i = 1
         for dependencies in tables.functionalDependencies:
-            print("FD " + i + ")\t" + dependencies.determinant + " --> " + dependencies.dependent)
-            i += 1
 
+            print("\tFD " + str(i) + ")\t", end = '')
+            print(dependencies.determinant, end = "")
+            print(" --> ", end ="")
+            print(dependencies.dependent, end = "")
+            print()
+            i += 1
+    print("\n---------------- DONE ----------------\n")
     return

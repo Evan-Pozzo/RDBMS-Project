@@ -1,9 +1,10 @@
 
 #I am going to represent the functional dependencies as a 2d array of dependency objects
 class FunctionalDependency:
-    def __init__(self, determinant, dependent):
+    def __init__(self, determinant, dependent, MVD=False):
         self.determinant = determinant # left hand side
         self.dependent = dependent # right hand side
+        self.MVD = MVD
 
 class Table:
     def __init__(self, name, primaryKeyArray, candidateKeyArray, columnsArray, functionalDependenciesArray, MVDArray):
@@ -18,7 +19,7 @@ def takeInput1NF():
     # take the input from the user
     tableName = input("Input the name of the table or input EXIT to end the program: \n")
     if tableName == "EXIT":
-        return tableName, 0, 0, 0, 0
+        return tableName, 0, 0, 0
     
     keyConstraintsArray = []
 
@@ -26,14 +27,19 @@ def takeInput1NF():
     primaryKeyStr = input("Input the primary key: \n")
     candidateKeyStr = input("Input any candidate keys: \n")
     amount = int(input("How many functional dependencies are there?: \n"))
-
+    
     # create an array of each string we input
     # we will parse these into objects later
     for i in range(amount):
-        keyConstraintsStr = input("FD" + (i+1) + ") ")
+        keyConstraintsStr = input("FD" + str(i+1) + ") ")
+        # remove the ', ' for all but the last item
+        if(i < (amount - 1)):
+            keyConstraintsStr = keyConstraintsStr[:-2]
         keyConstraintsArray.append(keyConstraintsStr)
+
+    columnArray = columnStr.split(', ')
         
-    if (primaryKeyStr != ""):
+    if (primaryKeyStr != "{{}}"):
         primaryKeyStr = primaryKeyStr.replace('{', '')
         primaryKeyStr = primaryKeyStr.replace('}', '')
         primaryKeyArray = primaryKeyStr.split(', ')
@@ -41,7 +47,7 @@ def takeInput1NF():
         print("-----------------------ERROR: NO PRIMARY KEY INPUTTED-----------------------")
         return 0
     
-    if (candidateKeyStr != ""):
+    if (candidateKeyStr != "{{}}"):
         candidateKeyStr = candidateKeyStr.replace('{', '')
         candidateKeyStr = candidateKeyStr.replace('}', '')
         candidateKeyArray = candidateKeyStr.split(', ')
@@ -49,12 +55,10 @@ def takeInput1NF():
         candidateKeyArray = []
 
     highestNormalization = input("Input the highest normal form you wish to achieve: \n")   
-
-    # parse the inputted strings into arrays
-    columnArray = columnStr.split(', ')
-    keyConstraintsArray, nonAtomicValuesArray, MVDarray = parseConstraints(keyConstraintsArray)
+    parsedkeyConstraintsArray = []
+    parsedkeyConstraintsArray, nonAtomicValuesArray, MVDarray = parseConstraints(keyConstraintsArray)
     
-    tableArray = [Table(tableName, primaryKeyArray, candidateKeyArray, columnArray, keyConstraintsArray)]
+    tableArray = [Table(tableName, primaryKeyArray, candidateKeyArray, columnArray, parsedkeyConstraintsArray, MVDarray)]
 
     return tableArray, highestNormalization, nonAtomicValuesArray, MVDarray
 
@@ -81,50 +85,69 @@ def parseConstraints(keyConstraintsArray):
     nonAtomicValuesArray = []
     MVDarray = []
 
-    dependent = 0
-    determinant = 0
 
+    classConstraintsArray = []
+
+    # parse the dependent and determinant values in the functional dependencies
     for values in keyConstraintsArray:
+        MVD = False
+        dependent = []
+        determinant = []
+
         #left side
-        determinant = values[:values.find(" -->")]
+        temp = values[:values.find(" -->")]
+        if(temp.find('{') > -1):
+            temp = temp.replace('{', '')
+            temp = temp.replace('}', '')
+            determinant = temp.split(', ')
+        else:
+            determinant = [temp]    
+
+        # check for any MVDs
+        if (values.find("(a MVD)") > -1):
+            temp = values.replace(" (a MVD)", "")
+            MVD = True
+            values = temp
+
+        # check for any non atomic values
+        if (values.find("(a non-atomic attribute)") > -1):
+            temp = values.replace(" (a non-atomic attribute)", "")
+            temp = temp[temp.find("--> ")+4:]
+            nonAtomicValuesArray.append(temp)
+            dependent = [temp]
         #right side
-        # check if arrow is -->> or -->
-        if (values.find("-->") > -1):
+
+        elif (values.find("-->") > -1):
             if (values.find("-->>") > -1):
-                dependent = values[:values.find("-->> ")+5]
+                temp = values[values.find("-->> ")+5:]
+
+                if(temp.find('{') > -1):
+                    temp = temp.replace('{', '')
+                    temp = temp.replace('}', '')
+                    dependent = temp.split(', ')
+                elif(temp.find(" | ") > -1):
+                    dependent = temp.split(" | ")
+                    MVDarray += temp
+                else:
+                    dependent = [temp]
+
             else:
-                dependent = values[:values.find("--> ")+4]
-
-
-        keyConstraintsArray.append(FunctionalDependency(dependent, determinant))
-
-        print()
-
-    i = 0
-
-    for constraints in keyConstraintsArray:
-        if (constraints.find("(a non-atomic attribute)") > -1):
-            constraints = constraints.replace(" (a non-atomic attribute)", "")
-            # replace the non parsed value with the parsed value
-            keyConstraintsArray[i] = constraints 
+                temp = values[values.find("--> ")+4:]
+                if(temp.find('{') > -1):
+                    temp = temp.replace('{', '')
+                    temp = temp.replace('}', '')
+                    dependent = temp.split(', ')
+                elif(temp.find(" | ") > -1):
+                    dependent = temp.split(" | ")
+                else:
+                    dependent = [temp]
+        else:
+            print("------------------ERROR '-->' NOT FOUND------------------")
+            return
            
-            #isolate the dependant value
-            if (constraints.find("--> ") > -1):
-                constraints = constraints[constraints.find("--> ")+4:]
-                nonAtomicValuesArray.append(constraints)
-
-        # might need to change how i do this
-        if (constraints.find("(a MVD)") > -1): 
-            constraints = constraints.replace(" (a MVD)", "")
-            # replace the non parsed value with the parsed value
-            keyConstraintsArray[i] = constraints 
-
-            #isolate the dependant value
-            if (constraints.find("-->> ") > -1):
-                constraints = constraints[constraints.find("-->> ")+5:]
-                MVDarray.append(constraints)
-
-        i += 1
 
 
-    return keyConstraintsArray, nonAtomicValuesArray, MVDarray
+
+        classConstraintsArray.append(FunctionalDependency(determinant, dependent, MVD))
+
+    return classConstraintsArray, nonAtomicValuesArray, MVDarray

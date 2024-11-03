@@ -5,34 +5,38 @@ def normalizeTo1NF(tableArray, nonAtomicValues) -> bool:
     #Normalize to 1NF: 
     #Data Input: Any attributes that hold multivalued, non-atomic data --- {PromocodeUsed}, {DrinkIngredient}, {DrinkAllergen}, {FoodIngredient}, {FoodAllergen} 					
     #Approach: Create a separate relation for each multivalued attribute along with the primary key of the base relation. 					
-    
+    print("Non Atomic Values -- ", nonAtomicValues)
+
     for values in nonAtomicValues:
-        print(values)
-        
+        tableName = "Evan Pozzo"
         # the indexes of the 4 2d arrays all line up to support the same tables
         # create a new table in tableArray to handle this non atomic value
-        tableName = tableArray[0] + values + "data"
         # epozzo fix candidateKeyArray
-        primaryKeyArray = candidateKeyArray = keyConstraintsArray = columnArray =[]
+        primaryKeyArray = []
+        candidateKeyArray = []
+        keyConstraintsArray = []
+        columnArray = []
+        MVDArray = []
         
         # fill the new arrays with the new values before we create the new object
-        for dependencies in tableArray.functionalDependencies:
+        for dependencies in tableArray[0].functionalDependencies:
             # search the array of dependencies
-            if (dependencies.dependent.find(values) > -1):
-                primaryKeyArray.append(dependencies.determinant)
-                columnArray.append(dependencies.determenant, dependencies.dependent)
-                keyConstraintsArray.append(InputParser.FunctionalDependency(dependencies.dependent, dependencies.determinant))
+            if (values in dependencies.dependent):
+                tableName = dependencies.determinant[0] + values + "Data"
+                
+                primaryKeyArray += dependencies.determinant
+                columnArray += dependencies.determinant
+                columnArray += dependencies.dependent
+                keyConstraintsArray.append(InputParser.FunctionalDependency(dependencies.determinant, dependencies.dependent))
 
         # remove the old determinant from the first table
         tableArray[0].columns.remove(values)
-        tableArray[0].primaryKeyArray.remove(values)
-
+  
         # loop through the functional dependencies and remove the one with the matching dependency
-        for dependencies in tableArray.functionalDependencies:
-            if (dependencies.dependent.find(values) > -1):
-                tableArray[0].functionalDependencies.remove(values)
-
-        tableArray.append(InputParser.Table(tableName, primaryKeyArray, candidateKeyArray, columnArray, keyConstraintsArray))
+        for dependencies in tableArray[0].functionalDependencies:
+            if (values in dependencies.dependent):
+                tableArray[0].functionalDependencies.remove(dependencies)
+        tableArray.append(InputParser.Table(tableName, primaryKeyArray, candidateKeyArray, columnArray, keyConstraintsArray, MVDArray))
 
     return True
 
@@ -45,34 +49,50 @@ def normalizeTo2NF(tableArray) -> bool:
 
         partialDependenciesAmount = 0
 
-        for dependencies in tableArray.functionalDependencies:
+        for dependencies in tables.functionalDependencies:
             j = 0
-            tableName = primaryKeyArray = candidateKeyArray = keyConstraintsArray = columnArray = []
+            tableName = []
+            primaryKeyArray = []
+            candidateKeyArray = []
+            keyConstraintsArray = []
+            columnArray = []
+            MVDArray = []
 
             # check for any determinants that are only part of the primary key
             if (dependencies.determinant != tables.primaryKey):
                 # ensure this is not a candidate key
-                if(tables.candidateKey.find(dependencies.determinant) == -1):
+                if(dependencies.determinant not in tables.candidateKey):
                     partialDependenciesAmount += 1
                     
                     # we have located the partial dependency, now we must normalize it by creating a new table
-                    tableName = dependencies.determinant + dependencies.dependent + "data"
-                    columnArray.append(dependencies.determinant, dependencies.dependent)
-                    primaryKeyArray.append(dependencies.determinant)
+                    #print(dependencies.determinant)
+                    #print(dependencies.dependent)
+
+                    tableName = dependencies.determinant[0] + dependencies.dependent[0] + "Data"
+                    columnArray += dependencies.determinant
+                    columnArray += dependencies.dependent
+                    primaryKeyArray += dependencies.determinant
                     keyConstraintsArray.append(InputParser.FunctionalDependency(dependencies.determinant, dependencies.dependent))
-                    tableArray.append([InputParser.Table(tableName, primaryKeyArray, candidateKeyArray, columnArray, keyConstraintsArray)])
+                    tableArray.append([InputParser.Table(tableName, primaryKeyArray, candidateKeyArray, columnArray, keyConstraintsArray, MVDArray)])
+                    print("New table: ", tableName)
 
                     # now we must remove the old data from their un-normalized positions
+                    stillThere = False
 
-                    # check if the old determinant is still needed in the new primary key: if not then remove it
-                    tableArray[i].primaryKey.remove(dependencies.determinant)
-
-                    # check for all instances of 
-                    for values in tableArray.functionalDependencies:
-                        if (values.dependent.find(dependencies.determinant) > -1):
-                            tableArray[0].functionalDependencies.remove(values)
+                    # find and remove the partial functional dependency if the determinant and dependent match
+                    for x in tables.functionalDependencies:
+                        if (dependencies.determinant in x.determinant and dependencies.dependent in x.dependent):
+                            tableArray[i].functionalDependencies.remove(x)
                         
+                    # check if the old determinant is still in any functional dependencies
+                    for x in tables.functionalDependencies:
+                        if dependencies.determinant in x.determinant:
+                            stillThere = True
 
+                    # we have cycled through and determined this is no longer a part of the primary key - remove it 
+                    if (stillThere == False):
+                        print(dependencies.determinant, "   ---   ", tableArray[i].primaryKey)
+                        tableArray[i].primaryKey.remove(dependencies.determinant)
 
             j+= 1
         i += 1
