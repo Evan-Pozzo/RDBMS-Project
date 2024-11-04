@@ -42,7 +42,8 @@ def takeInput1NF():
     if (primaryKeyStr != "{{}}"):
         primaryKeyStr = primaryKeyStr.replace('{', '')
         primaryKeyStr = primaryKeyStr.replace('}', '')
-        primaryKeyArray = primaryKeyStr.split(', ')
+        primaryKeyStr = primaryKeyStr.replace(' ', '')
+        primaryKeyArray = primaryKeyStr.split(',')
     else:
         print("-----------------------ERROR: NO PRIMARY KEY INPUTTED-----------------------")
         return 0
@@ -80,7 +81,6 @@ def takeInput5NF():
 # parse the inputted key constraints
 def parseConstraints(keyConstraintsArray):
     # 2d list of FunctionalDependency Objects
-    parsedKeyConstraints = [] # epozzo fix this
 
     nonAtomicValuesArray = []
     MVDarray = []
@@ -145,9 +145,6 @@ def parseConstraints(keyConstraintsArray):
             print("------------------ERROR '-->' NOT FOUND------------------")
             return
            
-
-
-
         classConstraintsArray.append(FunctionalDependency(determinant, dependent, MVD))
 
     return classConstraintsArray, nonAtomicValuesArray, MVDarray

@@ -22,13 +22,13 @@ def main():
         FinalRelationGen.printResult(tableArray)
 
         if (isValid):
-            Normalizer.normalizeTo1NF(tableArray, nonAtomicValuesArray)
+            tableArray = Normalizer.normalizeTo1NF(tableArray, nonAtomicValuesArray)
             print("\n------------- 1NF Results -------------\n")
             FinalRelationGen.printResult(tableArray)
 
         if (highestNormalization != "1NF" and isValid):
             InputParser.takeInput2NF()
-            isValid = Normalizer.normalizeTo2NF(tableArray)
+            tableArray = Normalizer.normalizeTo2NF(tableArray)
             print("\n------------- 2NF Results -------------\n")
             FinalRelationGen.printResult(tableArray)
 

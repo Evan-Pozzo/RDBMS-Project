@@ -1,0 +1,18 @@
+CoffeeShopData
+OrderID, Date, PromocodeUsed, TotalCost, TotalDrinkCost, TotalFoodCost, CustomerID, CustomerName, DrinkID, DrinkName, DrinkSize, DrinkQuantity, Milk, DrinkIngredient, DrinkAllergen, FoodID, FoodName, FoodQuantity, FoodIngredient, FoodAllergen
+{OrderID, DrinkID, FoodID} 
+{}
+12
+OrderID --> PromocodeUsed (a non-atomic attribute), 
+DrinkID --> DrinkIngredient (a non-atomic attribute), 
+DrinkID --> DrinkAllergen (a non-atomic attribute), 
+FoodID --> FoodIngredient (a non-atomic attribute), 
+FoodID --> FoodAllergen (a non-atomic attribute), 
+OrderID -->> DrinkID | FoodID (a MVD), 
+OrderID --> {Date, TotalCost, TotalDrinkCost, TotalFoodCost, CustomerID, CustomerName}, 
+{OrderID, DrinkID} --> {DrinkSize, DrinkQuantity, Milk}, 
+{OrderID, FoodID} --> {FoodQuantity}, 
+CustomerID --> CustomerName, 
+DrinkID --> DrinkName, 
+FoodID --> FoodName
+2NF
