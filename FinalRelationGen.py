@@ -19,5 +19,4 @@ def printResult(tableArray):
             print(dependencies.dependent, end = "")
             print()
             i += 1
-    print("\n---------------- DONE ----------------\n")
     return

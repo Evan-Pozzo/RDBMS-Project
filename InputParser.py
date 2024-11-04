@@ -63,12 +63,6 @@ def takeInput1NF():
 
     return tableArray, highestNormalization, nonAtomicValuesArray, MVDarray
 
-def takeInput2NF():
-    return
-
-def takeInput3NF():
-    return
-
 def takeInputBCNF():
     return
 

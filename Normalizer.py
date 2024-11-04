@@ -73,7 +73,7 @@ def normalizeTo2NF(tableArray):
                 if(len(newTableArray) > 0):
                     for newTables in newTableArray:
                         # if this table will have the same primary key as an already created table, just bundle them together
-                        print(newTables.tableName, newTables.primaryKey, primaryKeyArray)
+                        #print(newTables.tableName, newTables.primaryKey, primaryKeyArray)
                         if newTables.primaryKey == primaryKeyArray:
                             newTables.candidateKey = uniqueArrayAdd(newTables.candidateKey, candidateKeyArray)
                             newTables.columns = uniqueArrayAdd(newTables.columns, columnArray)
@@ -132,12 +132,59 @@ def normalizeTo2NF(tableArray):
     return tableArray
 
 def normalizeTo3NF(tableArray) -> bool:
+    #print("\n------------- 3NF ------------- \n")
     #Normalize to 3NF: 
     #Data Input: The functional dependency set of each base relation. 
     #Approach: Create a separate relation for each transitive functional dependency violation against the keys of the base relation. 
+    newTableArray = []
+    for tables in tableArray:
+        amount = 0
+        j = 0
+        checkDependencies = []
+        for dependencies in tables.functionalDependencies:
+            # check for transitive dependencies
+            # ex: A -> B, B-> C
+            # we will do this by checking for functional dependencies where the determinant is not a part of the primary key
+            if searchArrayUnordered(dependencies.determinant, tables.primaryKey) == False:
+                amount += 1
+                tableName = []
+                primaryKeyArray = []
+                candidateKeyArray = []
+                keyConstraintsArray = []
+                columnArray = []
+                MVDArray = []
+                tableName = dependencies.determinant[0] + "Data"
+                columnArray += dependencies.determinant
+                columnArray += dependencies.dependent
+                primaryKeyArray += dependencies.determinant
+                keyConstraintsArray.append(InputParser.FunctionalDependency(dependencies.determinant, dependencies.dependent))
+                newTableArray.append(InputParser.Table(tableName, primaryKeyArray, candidateKeyArray, columnArray, keyConstraintsArray, MVDArray))
+
+                checkDependencies.append(j)
+            j += 1
+
+        checkDependencies = sorted(checkDependencies, reverse=True)
+
+        # remove each TFD from the existing table
+        for index in checkDependencies:
+            for values in tables.functionalDependencies[index].determinant:
+                tables.columns.remove(values)
+            for values in tables.functionalDependencies[index].dependent:
+                tables.columns.remove(values)
+            tables.functionalDependencies.pop(index)
+        # don't have to mess with the primary key because the value was already not inside the primary key
+        if (amount == 0):
+            print("No TFD violations. Table is already in 3NF.")  
+
+    if len(newTableArray) > 0:
+        tableArray += newTableArray
+
+
     return
 
 def normalizeToBCNF(tableArray) -> bool:
+    for tables in tableArray:
+        print()
     #Normalize to BCNF: 
     #Data Input: The functional dependency set of each base relation. 
     #Approach: Create a separate relation for each BCNF functional dependency violation against the keys of the base relation. 
@@ -167,8 +214,8 @@ def identifyPartialDependency(primaryKey, candidateKey, functionalDependency) ->
     else:
         return False
     
-# return true if the unordered elements of the subArray are inside the Array
-def searchArrayUnordered(subArray, Array) -> bool:
+# return if the unordered elements of the subArray are inside the Array
+def searchArrayUnordered(subArray, Array):
     amount = 0
     if len(subArray) > len(Array):
         return False
