@@ -33,25 +33,22 @@ def main():
             FinalRelationGen.printResult(tableArray)
 
             if (highestNormalization != "2NF" and isValid):
-                isValid = Normalizer.normalizeTo3NF(tableArray)
+                tableArray = Normalizer.normalizeTo3NF(tableArray)
                 print("\n------------- 3NF Results -------------\n")
                 FinalRelationGen.printResult(tableArray)
 
                 if (highestNormalization != "3NF" and isValid):
-                    InputParser.takeInputBCNF()
-                    isValid = Normalizer.normalizeToBCNF(tableArray)
+                    tableArray = Normalizer.normalizeToBCNF(tableArray)
                     print("\n------------- BCNF Results -------------\n")
                     FinalRelationGen.printResult(tableArray)
 
                     if (highestNormalization != "BCNF" and isValid):
-                        InputParser.takeInput4NF()
-                        isValid = Normalizer.normalizeTo4NF(tableArray)
+                        tableArray = Normalizer.normalizeTo4NF(tableArray)
                         print("\n------------- 4NF Results -------------\n")
                         FinalRelationGen.printResult(tableArray)
 
                         if (highestNormalization != "4NF" and isValid):
-                            InputParser.takeInput5NF()
-                            isValid = Normalizer.normalizeTo5NF(tableArray)
+                            tableArray = Normalizer.normalizeTo5NF(tableArray)
                             print("\n------------- 5NF Results -------------\n")
                             FinalRelationGen.printResult(tableArray)
 

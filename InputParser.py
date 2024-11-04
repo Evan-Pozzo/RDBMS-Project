@@ -63,15 +63,6 @@ def takeInput1NF():
 
     return tableArray, highestNormalization, nonAtomicValuesArray, MVDarray
 
-def takeInputBCNF():
-    return
-
-def takeInput4NF():
-    return
-
-def takeInput5NF():
-    return
-
 # parse the inputted key constraints
 def parseConstraints(keyConstraintsArray):
     # 2d list of FunctionalDependency Objects

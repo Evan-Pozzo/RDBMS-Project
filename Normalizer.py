@@ -180,23 +180,75 @@ def normalizeTo3NF(tableArray) -> bool:
         tableArray += newTableArray
 
 
-    return
+    return tableArray
 
 def normalizeToBCNF(tableArray) -> bool:
-    for tables in tableArray:
-        print()
+    print("--------- BCNF ------------")
     #Normalize to BCNF: 
     #Data Input: The functional dependency set of each base relation. 
     #Approach: Create a separate relation for each BCNF functional dependency violation against the keys of the base relation. 
-    return
 
-def normalizeTo4NF(tableArray) -> bool:
+    newTableArray = []
+    for tables in tableArray:
+        BCNF1array = []
+        BCNF2array = []
+        amount = 0
+        # check for instances where A -> B and B -> C
+        for dependencies in tables.functionalDependencies:
+            for dependecies2 in tables.functionalDependencies:
+                # check if one relation's dependent is equal to another's determinant
+                if dependencies.dependent == dependecies2.determinant:
+                    # if these values are already at the same index then 
+                    amount += 1
+                    BCNF1array.append(dependencies.dependent)
+                    BCNF2array.append(dependecies2.determinant)
+
+        # create new tables for our found BCNF conflictions
+        i = 0
+        for values in BCNF1array: # loops over the dependents
+            tableName = []
+            primaryKeyArray = []
+            candidateKeyArray = []
+            keyConstraintsArray = []
+            columnArray = []
+            MVDArray = []
+
+            tableName = values[0] + "Data"
+            columnArray += values
+            columnArray += BCNF2array[i]
+            primaryKeyArray += values
+            keyConstraintsArray.append(InputParser.FunctionalDependency(values, BCNF2array[i]))
+           
+            newTableArray.append(InputParser.Table(tableName, primaryKeyArray, candidateKeyArray, columnArray, keyConstraintsArray, MVDArray))
+            i += 1
+        
+        # remove the old values
+        i = 0
+        # in a->b,b->c  we want to remove c
+        for i in range(len(BCNF2array)): 
+            tables.columns.remove(BCNF2array[i])
+            j = 0
+            for dependencies in tables.functionalDependencies:
+                if BCNF2array[i] == dependencies.dependent and BCNF1array[i] == dependencies.determinant:
+                    tables.functionalDependencies.pop(j)
+                    break
+                j += 1
+
+        if amount == 0:
+            print("Table is already in BCNF")   
+
+        if len(newTableArray) > 0:
+            tableArray += newTableArray
+    
+    return tableArray
+
+def normalizeTo4NF(tableArray):
     #Normalize to 4NF: 
     #Data Input: The multi-valued functional dependency set of each base relation. 
     #Approach: Create a separate relation for each MVD violation.     
     return
 
-def normalizeTo5NF(tableArray) -> bool:
+def normalizeTo5NF(tableArray):
     #Normalize to 5NF: 
     #Data Input: User provided data instances for each base relation. 
     #Approach: Decompose each base relation into its sub-relation projection if a non-trivial join dependency is identified. 
