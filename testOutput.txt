@@ -1,0 +1,507 @@
+CoffeeShopData
+        Primary Key:  ['OrderID', 'DrinkID', 'FoodID']
+        Candidate Keys:  ['']
+         -  OrderID
+         -  Date
+         -  PromocodeUsed
+         -  TotalCost
+         -  TotalDrinkCost
+         -  TotalFoodCost
+         -  CustomerID
+         -  CustomerName
+         -  DrinkID
+         -  DrinkName
+         -  DrinkSize
+         -  DrinkQuantity
+         -  Milk
+         -  DrinkIngredient
+         -  DrinkAllergen
+         -  FoodID
+         -  FoodName
+         -  FoodQuantity
+         -  FoodIngredient
+         -  FoodAllergen
+
+        FD 1)   ['OrderID'] --> ['PromocodeUsed'] - MVD:  False
+        FD 2)   ['DrinkID'] --> ['DrinkIngredient'] - MVD:  False
+        FD 3)   ['DrinkID'] --> ['DrinkAllergen'] - MVD:  False
+        FD 4)   ['FoodID'] --> ['FoodIngredient'] - MVD:  False
+        FD 5)   ['FoodID'] --> ['FoodAllergen'] - MVD:  False
+        FD 6)   ['OrderID'] --> ['DrinkID', 'FoodID'] - MVD:  True
+        FD 7)   ['OrderID'] --> ['Date', 'TotalCost', 'TotalDrinkCost', 'TotalFoodCost', 'CustomerID', 'CustomerName'] - MVD:  False
+        FD 8)   ['OrderID', 'DrinkID'] --> ['DrinkSize', 'DrinkQuantity', 'Milk'] - MVD:  False
+        FD 9)   ['OrderID', 'FoodID'] --> ['FoodQuantity'] - MVD:  False
+        FD 10)  ['CustomerID'] --> ['CustomerName'] - MVD:  False
+        FD 11)  ['DrinkID'] --> ['DrinkName'] - MVD:  False
+        FD 12)  ['FoodID'] --> ['FoodName'] - MVD:  False
+Non Atomic Values --  ['PromocodeUsed', 'DrinkIngredient', 'DrinkAllergen', 'FoodIngredient', 'FoodAllergen']
+
+------------- 1NF Results -------------
+
+CoffeeShopData
+        Primary Key:  ['OrderID', 'DrinkID', 'FoodID']
+        Candidate Keys:  ['']
+         -  OrderID
+         -  Date
+         -  TotalCost
+         -  TotalDrinkCost
+         -  TotalFoodCost
+         -  CustomerID
+         -  CustomerName
+         -  DrinkID
+         -  DrinkName
+         -  DrinkSize
+         -  DrinkQuantity
+         -  Milk
+         -  FoodID
+         -  FoodName
+         -  FoodQuantity
+
+        FD 1)   ['OrderID'] --> ['DrinkID', 'FoodID'] - MVD:  True
+        FD 2)   ['OrderID'] --> ['Date', 'TotalCost', 'TotalDrinkCost', 'TotalFoodCost', 'CustomerID', 'CustomerName'] - MVD:  False
+        FD 3)   ['OrderID', 'DrinkID'] --> ['DrinkSize', 'DrinkQuantity', 'Milk'] - MVD:  False
+        FD 4)   ['OrderID', 'FoodID'] --> ['FoodQuantity'] - MVD:  False
+        FD 5)   ['CustomerID'] --> ['CustomerName'] - MVD:  False
+        FD 6)   ['DrinkID'] --> ['DrinkName'] - MVD:  False
+        FD 7)   ['FoodID'] --> ['FoodName'] - MVD:  False
+PromocodeUsedData
+        Primary Key:  ['OrderID']
+        Candidate Keys:  []
+         -  OrderID
+         -  PromocodeUsed
+
+        FD 1)   ['OrderID'] --> ['PromocodeUsed'] - MVD:  False
+DrinkIngredientData
+        Primary Key:  ['DrinkID']
+        Candidate Keys:  []
+         -  DrinkID
+         -  DrinkIngredient
+
+        FD 1)   ['DrinkID'] --> ['DrinkIngredient'] - MVD:  False
+DrinkAllergenData
+        Primary Key:  ['DrinkID']
+        Candidate Keys:  []
+         -  DrinkID
+         -  DrinkAllergen
+
+        FD 1)   ['DrinkID'] --> ['DrinkAllergen'] - MVD:  False
+FoodIngredientData
+        Primary Key:  ['FoodID']
+        Candidate Keys:  []
+         -  FoodID
+         -  FoodIngredient
+
+        FD 1)   ['FoodID'] --> ['FoodIngredient'] - MVD:  False
+FoodAllergenData
+        Primary Key:  ['FoodID']
+        Candidate Keys:  []
+         -  FoodID
+         -  FoodAllergen
+
+        FD 1)   ['FoodID'] --> ['FoodAllergen'] - MVD:  False
+
+------------- 2NF Results -------------
+
+CoffeeShopData
+        Primary Key:  ['OrderID', 'DrinkID', 'FoodID']
+        Candidate Keys:  ['']
+         -  OrderID
+         -  CustomerID
+         -  CustomerName
+         -  DrinkID
+         -  FoodID
+
+        FD 1)   ['CustomerID'] --> ['CustomerName'] - MVD:  False
+PromocodeUsedData
+        Primary Key:  ['OrderID']
+        Candidate Keys:  []
+         -  OrderID
+         -  PromocodeUsed
+
+        FD 1)   ['OrderID'] --> ['PromocodeUsed'] - MVD:  False
+DrinkIngredientData
+        Primary Key:  ['DrinkID']
+        Candidate Keys:  []
+         -  DrinkID
+         -  DrinkIngredient
+
+        FD 1)   ['DrinkID'] --> ['DrinkIngredient'] - MVD:  False
+DrinkAllergenData
+        Primary Key:  ['DrinkID']
+        Candidate Keys:  []
+         -  DrinkID
+         -  DrinkAllergen
+
+        FD 1)   ['DrinkID'] --> ['DrinkAllergen'] - MVD:  False
+FoodIngredientData
+        Primary Key:  ['FoodID']
+        Candidate Keys:  []
+         -  FoodID
+         -  FoodIngredient
+
+        FD 1)   ['FoodID'] --> ['FoodIngredient'] - MVD:  False
+FoodAllergenData
+        Primary Key:  ['FoodID']
+        Candidate Keys:  []
+         -  FoodID
+         -  FoodAllergen
+
+        FD 1)   ['FoodID'] --> ['FoodAllergen'] - MVD:  False
+OrderIDDrinkIDData
+        Primary Key:  ['OrderID']
+        Candidate Keys:  []
+         -  OrderID
+         -  DrinkID
+         -  FoodID
+         -  Date
+         -  TotalCost
+         -  TotalDrinkCost
+         -  TotalFoodCost
+         -  CustomerID
+         -  CustomerName
+
+        FD 1)   ['OrderID'] --> ['DrinkID', 'FoodID'] - MVD:  True
+        FD 2)   ['OrderID'] --> ['Date', 'TotalCost', 'TotalDrinkCost', 'TotalFoodCost', 'CustomerID', 'CustomerName'] - MVD:  False
+OrderIDDrinkSizeData
+        Primary Key:  ['OrderID', 'DrinkID']
+        Candidate Keys:  []
+         -  OrderID
+         -  DrinkID
+         -  DrinkSize
+         -  DrinkQuantity
+         -  Milk
+
+        FD 1)   ['OrderID', 'DrinkID'] --> ['DrinkSize', 'DrinkQuantity', 'Milk'] - MVD:  False
+OrderIDFoodQuantityData
+        Primary Key:  ['OrderID', 'FoodID']
+        Candidate Keys:  []
+         -  OrderID
+         -  FoodID
+         -  FoodQuantity
+
+        FD 1)   ['OrderID', 'FoodID'] --> ['FoodQuantity'] - MVD:  False
+DrinkIDDrinkNameData
+        Primary Key:  ['DrinkID']
+        Candidate Keys:  []
+         -  DrinkID
+         -  DrinkName
+
+        FD 1)   ['DrinkID'] --> ['DrinkName'] - MVD:  False
+FoodIDFoodNameData
+        Primary Key:  ['FoodID']
+        Candidate Keys:  []
+         -  FoodID
+         -  FoodName
+
+        FD 1)   ['FoodID'] --> ['FoodName'] - MVD:  False
+
+------------- 3NF Results -------------
+
+CoffeeShopData
+        Primary Key:  ['OrderID', 'DrinkID', 'FoodID']
+        Candidate Keys:  ['']
+         -  OrderID
+         -  DrinkID
+         -  FoodID
+
+PromocodeUsedData
+        Primary Key:  ['OrderID']
+        Candidate Keys:  []
+         -  OrderID
+         -  PromocodeUsed
+
+        FD 1)   ['OrderID'] --> ['PromocodeUsed'] - MVD:  False
+DrinkIngredientData
+        Primary Key:  ['DrinkID']
+        Candidate Keys:  []
+         -  DrinkID
+         -  DrinkIngredient
+
+        FD 1)   ['DrinkID'] --> ['DrinkIngredient'] - MVD:  False
+DrinkAllergenData
+        Primary Key:  ['DrinkID']
+        Candidate Keys:  []
+         -  DrinkID
+         -  DrinkAllergen
+
+        FD 1)   ['DrinkID'] --> ['DrinkAllergen'] - MVD:  False
+FoodIngredientData
+        Primary Key:  ['FoodID']
+        Candidate Keys:  []
+         -  FoodID
+         -  FoodIngredient
+
+        FD 1)   ['FoodID'] --> ['FoodIngredient'] - MVD:  False
+FoodAllergenData
+        Primary Key:  ['FoodID']
+        Candidate Keys:  []
+         -  FoodID
+         -  FoodAllergen
+
+        FD 1)   ['FoodID'] --> ['FoodAllergen'] - MVD:  False
+OrderIDDrinkIDData
+        Primary Key:  ['OrderID']
+        Candidate Keys:  []
+         -  OrderID
+         -  DrinkID
+         -  FoodID
+         -  Date
+         -  TotalCost
+         -  TotalDrinkCost
+         -  TotalFoodCost
+         -  CustomerID
+         -  CustomerName
+
+        FD 1)   ['OrderID'] --> ['DrinkID', 'FoodID'] - MVD:  True
+        FD 2)   ['OrderID'] --> ['Date', 'TotalCost', 'TotalDrinkCost', 'TotalFoodCost', 'CustomerID', 'CustomerName'] - MVD:  False
+OrderIDDrinkSizeData
+        Primary Key:  ['OrderID', 'DrinkID']
+        Candidate Keys:  []
+         -  OrderID
+         -  DrinkID
+         -  DrinkSize
+         -  DrinkQuantity
+         -  Milk
+
+        FD 1)   ['OrderID', 'DrinkID'] --> ['DrinkSize', 'DrinkQuantity', 'Milk'] - MVD:  False
+OrderIDFoodQuantityData
+        Primary Key:  ['OrderID', 'FoodID']
+        Candidate Keys:  []
+         -  OrderID
+         -  FoodID
+         -  FoodQuantity
+
+        FD 1)   ['OrderID', 'FoodID'] --> ['FoodQuantity'] - MVD:  False
+DrinkIDDrinkNameData
+        Primary Key:  ['DrinkID']
+        Candidate Keys:  []
+         -  DrinkID
+         -  DrinkName
+
+        FD 1)   ['DrinkID'] --> ['DrinkName'] - MVD:  False
+FoodIDFoodNameData
+        Primary Key:  ['FoodID']
+        Candidate Keys:  []
+         -  FoodID
+         -  FoodName
+
+        FD 1)   ['FoodID'] --> ['FoodName'] - MVD:  False
+CustomerIDData
+        Primary Key:  ['CustomerID']
+        Candidate Keys:  []
+         -  CustomerID
+         -  CustomerName
+
+        FD 1)   ['CustomerID'] --> ['CustomerName'] - MVD:  False
+--------- BCNF ------------
+
+------------- BCNF Results -------------
+
+CoffeeShopData
+        Primary Key:  ['OrderID', 'DrinkID', 'FoodID']
+        Candidate Keys:  ['']
+         -  OrderID
+         -  DrinkID
+         -  FoodID
+
+PromocodeUsedData
+        Primary Key:  ['OrderID']
+        Candidate Keys:  []
+         -  OrderID
+         -  PromocodeUsed
+
+        FD 1)   ['OrderID'] --> ['PromocodeUsed'] - MVD:  False
+DrinkIngredientData
+        Primary Key:  ['DrinkID']
+        Candidate Keys:  []
+         -  DrinkID
+         -  DrinkIngredient
+
+        FD 1)   ['DrinkID'] --> ['DrinkIngredient'] - MVD:  False
+DrinkAllergenData
+        Primary Key:  ['DrinkID']
+        Candidate Keys:  []
+         -  DrinkID
+         -  DrinkAllergen
+
+        FD 1)   ['DrinkID'] --> ['DrinkAllergen'] - MVD:  False
+FoodIngredientData
+        Primary Key:  ['FoodID']
+        Candidate Keys:  []
+         -  FoodID
+         -  FoodIngredient
+
+        FD 1)   ['FoodID'] --> ['FoodIngredient'] - MVD:  False
+FoodAllergenData
+        Primary Key:  ['FoodID']
+        Candidate Keys:  []
+         -  FoodID
+         -  FoodAllergen
+
+        FD 1)   ['FoodID'] --> ['FoodAllergen'] - MVD:  False
+OrderIDDrinkIDData
+        Primary Key:  ['OrderID']
+        Candidate Keys:  []
+         -  OrderID
+         -  DrinkID
+         -  FoodID
+         -  Date
+         -  TotalCost
+         -  TotalDrinkCost
+         -  TotalFoodCost
+         -  CustomerID
+         -  CustomerName
+
+        FD 1)   ['OrderID'] --> ['DrinkID', 'FoodID'] - MVD:  True
+        FD 2)   ['OrderID'] --> ['Date', 'TotalCost', 'TotalDrinkCost', 'TotalFoodCost', 'CustomerID', 'CustomerName'] - MVD:  False
+OrderIDDrinkSizeData
+        Primary Key:  ['OrderID', 'DrinkID']
+        Candidate Keys:  []
+         -  OrderID
+         -  DrinkID
+         -  DrinkSize
+         -  DrinkQuantity
+         -  Milk
+
+        FD 1)   ['OrderID', 'DrinkID'] --> ['DrinkSize', 'DrinkQuantity', 'Milk'] - MVD:  False
+OrderIDFoodQuantityData
+        Primary Key:  ['OrderID', 'FoodID']
+        Candidate Keys:  []
+         -  OrderID
+         -  FoodID
+         -  FoodQuantity
+
+        FD 1)   ['OrderID', 'FoodID'] --> ['FoodQuantity'] - MVD:  False
+DrinkIDDrinkNameData
+        Primary Key:  ['DrinkID']
+        Candidate Keys:  []
+         -  DrinkID
+         -  DrinkName
+
+        FD 1)   ['DrinkID'] --> ['DrinkName'] - MVD:  False
+FoodIDFoodNameData
+        Primary Key:  ['FoodID']
+        Candidate Keys:  []
+         -  FoodID
+         -  FoodName
+
+        FD 1)   ['FoodID'] --> ['FoodName'] - MVD:  False
+CustomerIDData
+        Primary Key:  ['CustomerID']
+        Candidate Keys:  []
+         -  CustomerID
+         -  CustomerName
+
+        FD 1)   ['CustomerID'] --> ['CustomerName'] - MVD:  False
+
+------------- 4NF Results -------------
+
+CoffeeShopData
+        Primary Key:  ['OrderID', 'DrinkID', 'FoodID']
+        Candidate Keys:  ['']
+         -  OrderID
+         -  DrinkID
+         -  FoodID
+
+PromocodeUsedData
+        Primary Key:  ['OrderID']
+        Candidate Keys:  []
+         -  OrderID
+         -  PromocodeUsed
+
+        FD 1)   ['OrderID'] --> ['PromocodeUsed'] - MVD:  False
+DrinkIngredientData
+        Primary Key:  ['DrinkID']
+        Candidate Keys:  []
+         -  DrinkID
+         -  DrinkIngredient
+
+        FD 1)   ['DrinkID'] --> ['DrinkIngredient'] - MVD:  False
+DrinkAllergenData
+        Primary Key:  ['DrinkID']
+        Candidate Keys:  []
+         -  DrinkID
+         -  DrinkAllergen
+
+        FD 1)   ['DrinkID'] --> ['DrinkAllergen'] - MVD:  False
+FoodIngredientData
+        Primary Key:  ['FoodID']
+        Candidate Keys:  []
+         -  FoodID
+         -  FoodIngredient
+
+        FD 1)   ['FoodID'] --> ['FoodIngredient'] - MVD:  False
+FoodAllergenData
+        Primary Key:  ['FoodID']
+        Candidate Keys:  []
+         -  FoodID
+         -  FoodAllergen
+
+        FD 1)   ['FoodID'] --> ['FoodAllergen'] - MVD:  False
+OrderIDDrinkIDData
+        Primary Key:  ['OrderID']
+        Candidate Keys:  []
+         -  OrderID
+         -  DrinkID
+         -  Date
+         -  TotalCost
+         -  TotalDrinkCost
+         -  TotalFoodCost
+         -  CustomerID
+         -  CustomerName
+
+        FD 1)   ['OrderID'] --> ['DrinkID'] - MVD:  True
+        FD 2)   ['OrderID'] --> ['Date', 'TotalCost', 'TotalDrinkCost', 'TotalFoodCost', 'CustomerID', 'CustomerName'] - MVD:  False
+OrderIDDrinkSizeData
+        Primary Key:  ['OrderID', 'DrinkID']
+        Candidate Keys:  []
+         -  OrderID
+         -  DrinkID
+         -  DrinkSize
+         -  DrinkQuantity
+         -  Milk
+
+        FD 1)   ['OrderID', 'DrinkID'] --> ['DrinkSize', 'DrinkQuantity', 'Milk'] - MVD:  False
+OrderIDFoodQuantityData
+        Primary Key:  ['OrderID', 'FoodID']
+        Candidate Keys:  []
+         -  OrderID
+         -  FoodID
+         -  FoodQuantity
+
+        FD 1)   ['OrderID', 'FoodID'] --> ['FoodQuantity'] - MVD:  False
+DrinkIDDrinkNameData
+        Primary Key:  ['DrinkID']
+        Candidate Keys:  []
+         -  DrinkID
+         -  DrinkName
+
+        FD 1)   ['DrinkID'] --> ['DrinkName'] - MVD:  False
+FoodIDFoodNameData
+        Primary Key:  ['FoodID']
+        Candidate Keys:  []
+         -  FoodID
+         -  FoodName
+
+        FD 1)   ['FoodID'] --> ['FoodName'] - MVD:  False
+CustomerIDData
+        Primary Key:  ['CustomerID']
+        Candidate Keys:  []
+         -  CustomerID
+         -  CustomerName
+
+        FD 1)   ['CustomerID'] --> ['CustomerName'] - MVD:  False
+FoodIDData
+        Primary Key:  ['OrderID']
+        Candidate Keys:  []
+         -  FoodID
+         -  OrderID
+
+        FD 1)   ['OrderID'] --> ['FoodID'] - MVD:  False
+Input the name of the table or input EXIT to end the program:
+EXIT
+
+
+-----------PROGRAM TERMINATED-----------
+
+

@@ -15,4 +15,4 @@ OrderID --> {Date, TotalCost, TotalDrinkCost, TotalFoodCost, CustomerID, Custome
 CustomerID --> CustomerName, 
 DrinkID --> DrinkName, 
 FoodID --> FoodName
-2NF
+4NF
