@@ -15,7 +15,7 @@ def main():
         # tableArray is an array of Table objects
         # each table object has an array for  column names, primary key, candidate keys, and functionalDependency objects
         # each functionalDependency object has a determinant and a dependency array
-        tableArray, highestNormalization, nonAtomicValuesArray, MVDarray = InputParser.takeInput1NF()
+        tableArray, highestNormalization, nonAtomicValuesArray = InputParser.takeInput1NF()
         if tableArray == "EXIT":
             isValid = False
             break

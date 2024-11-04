@@ -17,6 +17,7 @@ def printResult(tableArray):
             print(dependencies.determinant, end = "")
             print(" --> ", end ="")
             print(dependencies.dependent, end = "")
+            print(" - MVD: ", dependencies.MVD, end = "")
             print()
             i += 1
     return

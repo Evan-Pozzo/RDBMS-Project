@@ -7,19 +7,18 @@ class FunctionalDependency:
         self.MVD = MVD
 
 class Table:
-    def __init__(self, name, primaryKeyArray, candidateKeyArray, columnsArray, functionalDependenciesArray, MVDArray):
+    def __init__(self, name, primaryKeyArray, candidateKeyArray, columnsArray, functionalDependenciesArray):
         self.tableName = name
         self.primaryKey = primaryKeyArray
         self.candidateKey = candidateKeyArray
         self.columns = columnsArray 
         self.functionalDependencies = functionalDependenciesArray # array of FunctionalDependency objects
-        self.MVD = MVDArray
 
 def takeInput1NF():
     # take the input from the user
     tableName = input("Input the name of the table or input EXIT to end the program: \n")
     if tableName == "EXIT":
-        return tableName, 0, 0, 0
+        return tableName, 0, 0
     
     keyConstraintsArray = []
 
@@ -57,18 +56,17 @@ def takeInput1NF():
 
     highestNormalization = input("Input the highest normal form you wish to achieve: \n")   
     parsedkeyConstraintsArray = []
-    parsedkeyConstraintsArray, nonAtomicValuesArray, MVDarray = parseConstraints(keyConstraintsArray)
+    parsedkeyConstraintsArray, nonAtomicValuesArray = parseConstraints(keyConstraintsArray)
     
-    tableArray = [Table(tableName, primaryKeyArray, candidateKeyArray, columnArray, parsedkeyConstraintsArray, MVDarray)]
+    tableArray = [Table(tableName, primaryKeyArray, candidateKeyArray, columnArray, parsedkeyConstraintsArray)]
 
-    return tableArray, highestNormalization, nonAtomicValuesArray, MVDarray
+    return tableArray, highestNormalization, nonAtomicValuesArray
 
 # parse the inputted key constraints
 def parseConstraints(keyConstraintsArray):
     # 2d list of FunctionalDependency Objects
 
     nonAtomicValuesArray = []
-    MVDarray = []
 
 
     classConstraintsArray = []
@@ -112,7 +110,6 @@ def parseConstraints(keyConstraintsArray):
                     dependent = temp.split(', ')
                 elif(temp.find(" | ") > -1):
                     dependent = temp.split(" | ")
-                    MVDarray += temp
                 else:
                     dependent = [temp]
 
@@ -132,4 +129,4 @@ def parseConstraints(keyConstraintsArray):
            
         classConstraintsArray.append(FunctionalDependency(determinant, dependent, MVD))
 
-    return classConstraintsArray, nonAtomicValuesArray, MVDarray
+    return classConstraintsArray, nonAtomicValuesArray

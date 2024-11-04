@@ -11,12 +11,10 @@ def normalizeTo1NF(tableArray, nonAtomicValues):
         tableName = "Evan Pozzo"
         # the indexes of the 4 2d arrays all line up to support the same tables
         # create a new table in tableArray to handle this non atomic value
-        # epozzo fix candidateKeyArray
         primaryKeyArray = []
         candidateKeyArray = []
         keyConstraintsArray = []
         columnArray = []
-        MVDArray = []
         
         # fill the new arrays with the new values before we create the new object
         for dependencies in tableArray[0].functionalDependencies:
@@ -27,7 +25,7 @@ def normalizeTo1NF(tableArray, nonAtomicValues):
                 primaryKeyArray += dependencies.determinant
                 columnArray += dependencies.determinant
                 columnArray += dependencies.dependent
-                keyConstraintsArray.append(InputParser.FunctionalDependency(dependencies.determinant, dependencies.dependent))
+                keyConstraintsArray.append(InputParser.FunctionalDependency(dependencies.determinant, dependencies.dependent, dependencies.MVD))
 
         # remove the old determinant from the first table
         tableArray[0].columns.remove(values)
@@ -36,7 +34,7 @@ def normalizeTo1NF(tableArray, nonAtomicValues):
         for dependencies in tableArray[0].functionalDependencies:
             if (values in dependencies.dependent):
                 tableArray[0].functionalDependencies.remove(dependencies)
-        tableArray.append(InputParser.Table(tableName, primaryKeyArray, candidateKeyArray, columnArray, keyConstraintsArray, MVDArray))
+        tableArray.append(InputParser.Table(tableName, primaryKeyArray, candidateKeyArray, columnArray, keyConstraintsArray))
 
     return tableArray
 
@@ -51,7 +49,6 @@ def normalizeTo2NF(tableArray):
         i = 0
         #print(tables.tableName)
         partialDependenciesAmount = 0
-        checkPrimaryKey = []
         checkDependencies = []
         j = 0
         for dependencies in tables.functionalDependencies:
@@ -60,7 +57,6 @@ def normalizeTo2NF(tableArray):
             candidateKeyArray = []
             keyConstraintsArray = []
             columnArray = []
-            MVDArray = []
             if(identifyPartialDependency(tables.primaryKey, tables.candidateKey, dependencies.determinant) == True):
                 partialDependenciesAmount += 1
                 # we have located the partial dependency, now we must normalize it by creating a new table
@@ -68,7 +64,7 @@ def normalizeTo2NF(tableArray):
                 columnArray += dependencies.determinant
                 columnArray += dependencies.dependent
                 primaryKeyArray += dependencies.determinant
-                keyConstraintsArray.append(InputParser.FunctionalDependency(dependencies.determinant, dependencies.dependent))
+                keyConstraintsArray.append(InputParser.FunctionalDependency(dependencies.determinant, dependencies.dependent, dependencies.MVD))
                 skipped = 0
                 if(len(newTableArray) > 0):
                     for newTables in newTableArray:
@@ -85,18 +81,16 @@ def normalizeTo2NF(tableArray):
                         else:
                             skipped += 1
                 else:
-                    newTableArray.append(InputParser.Table(tableName, primaryKeyArray, candidateKeyArray, columnArray, keyConstraintsArray, MVDArray))
+                    newTableArray.append(InputParser.Table(tableName, primaryKeyArray, candidateKeyArray, columnArray, keyConstraintsArray))
                 
                 if skipped == len(newTableArray) and len(newTableArray) > 0:
-                    newTableArray.append(InputParser.Table(tableName, primaryKeyArray, candidateKeyArray, columnArray, keyConstraintsArray, MVDArray))
+                    newTableArray.append(InputParser.Table(tableName, primaryKeyArray, candidateKeyArray, columnArray, keyConstraintsArray))
 
 
                 #print("New table: ", tableName)
                 
                 # mark down the index of this FD so we can remove it later
                 checkDependencies.append(j)
-                # Once we are done with this table, check all the determinants against the primary key
-                #checkPrimaryKey += dependencies.determinant
 
             j += 1
             
@@ -147,18 +141,17 @@ def normalizeTo3NF(tableArray) -> bool:
             # we will do this by checking for functional dependencies where the determinant is not a part of the primary key
             if searchArrayUnordered(dependencies.determinant, tables.primaryKey) == False:
                 amount += 1
-                tableName = []
                 primaryKeyArray = []
                 candidateKeyArray = []
                 keyConstraintsArray = []
                 columnArray = []
-                MVDArray = []
+
                 tableName = dependencies.determinant[0] + "Data"
                 columnArray += dependencies.determinant
                 columnArray += dependencies.dependent
                 primaryKeyArray += dependencies.determinant
-                keyConstraintsArray.append(InputParser.FunctionalDependency(dependencies.determinant, dependencies.dependent))
-                newTableArray.append(InputParser.Table(tableName, primaryKeyArray, candidateKeyArray, columnArray, keyConstraintsArray, MVDArray))
+                keyConstraintsArray.append(InputParser.FunctionalDependency(dependencies.determinant, dependencies.dependent, dependencies.MVD))
+                newTableArray.append(InputParser.Table(tableName, primaryKeyArray, candidateKeyArray, columnArray, keyConstraintsArray))
 
                 checkDependencies.append(j)
             j += 1
@@ -206,20 +199,22 @@ def normalizeToBCNF(tableArray) -> bool:
         # create new tables for our found BCNF conflictions
         i = 0
         for values in BCNF1array: # loops over the dependents
-            tableName = []
             primaryKeyArray = []
             candidateKeyArray = []
             keyConstraintsArray = []
             columnArray = []
-            MVDArray = []
-
+            MVD = False
             tableName = values[0] + "Data"
             columnArray += values
             columnArray += BCNF2array[i]
             primaryKeyArray += values
-            keyConstraintsArray.append(InputParser.FunctionalDependency(values, BCNF2array[i]))
+            for dependencies in tables.functionalDependencies:
+                if BCNF2array[i] == dependencies.dependent and BCNF1array[i] == dependencies.determinant:
+                    MVD = dependencies.MVD
+                    break
+            keyConstraintsArray.append(InputParser.FunctionalDependency(values, BCNF2array[i], MVD))
            
-            newTableArray.append(InputParser.Table(tableName, primaryKeyArray, candidateKeyArray, columnArray, keyConstraintsArray, MVDArray))
+            newTableArray.append(InputParser.Table(tableName, primaryKeyArray, candidateKeyArray, columnArray, keyConstraintsArray))
             i += 1
         
         # remove the old values
@@ -246,7 +241,47 @@ def normalizeTo4NF(tableArray):
     #Normalize to 4NF: 
     #Data Input: The multi-valued functional dependency set of each base relation. 
     #Approach: Create a separate relation for each MVD violation.     
-    return
+    newTableArray = []
+    for tables in tableArray:
+        amount = 0
+        i = 0
+        MVDindex = []
+        primaryKeyArray = []
+        candidateKeyArray = []
+        keyConstraintsArray = []
+        columnArray = []
+        
+        # loop over every functional dependency
+        for dependencies in tables.functionalDependencies:
+            # check if this dependency has an mvd
+            if dependencies.MVD == True:
+                amount += 1
+                MVDindex.append(i)
+
+                tableName = dependencies.dependent[1] + "Data"
+                # we will create the new table with the second MVD dependent
+                columnArray.append(dependencies.dependent[1])
+                columnArray += dependencies.determinant
+                primaryKeyArray += dependencies.determinant
+                keyConstraintsArray.append(InputParser.FunctionalDependency(dependencies.determinant, [dependencies.dependent[1]]))
+                newTableArray.append(InputParser.Table(tableName, primaryKeyArray, candidateKeyArray, columnArray, keyConstraintsArray))
+            i += 0
+        if amount == 0:
+            print("Table is already in 4NF") 
+
+        # now we must remove the located MVDs
+        # a -> b | > c we remove c
+        for dependencies in keyConstraintsArray:
+            tables.columns.remove(dependencies.dependent[0])
+
+        MVDindex = sorted(MVDindex, reverse=True)
+        # delete the second value in each MVD
+        for index in MVDindex:
+            tables.functionalDependencies[index].dependent.pop(1)
+
+    if len(newTableArray) > 0:
+        tableArray += newTableArray
+    return tableArray
 
 def normalizeTo5NF(tableArray):
     #Normalize to 5NF: 
