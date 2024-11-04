@@ -130,7 +130,6 @@ def normalizeTo2NF(tableArray):
     return tableArray
 
 def normalizeTo3NF(tableArray) -> bool:
-    #print("\n------------- 3NF ------------- \n")
     #Normalize to 3NF: 
     #Data Input: The functional dependency set of each base relation. 
     #Approach: Create a separate relation for each transitive functional dependency violation against the keys of the base relation. 
@@ -181,7 +180,6 @@ def normalizeTo3NF(tableArray) -> bool:
     return tableArray
 
 def normalizeToBCNF(tableArray) -> bool:
-    print("--------- BCNF ------------")
     #Normalize to BCNF: 
     #Data Input: The functional dependency set of each base relation. 
     #Approach: Create a separate relation for each BCNF functional dependency violation against the keys of the base relation. 
