@@ -5,7 +5,6 @@
 import Normalizer
 import InputParser
 import FinalRelationGen
-import numpy as np
 
 def main():
 
@@ -22,35 +21,22 @@ def main():
 
         FinalRelationGen.printResult(tableArray)
 
-        if (isValid):
+        if (isValid): # 1NF
             tableArray = Normalizer.normalizeTo1NF(tableArray, nonAtomicValuesArray)
-            print("\n------------- 1NF Results -------------\n")
-            FinalRelationGen.printResult(tableArray)
+            if (highestNormalization != "1NF" and isValid): # 2NF
+                tableArray = Normalizer.normalizeTo2NF(tableArray)
 
-        if (highestNormalization != "1NF" and isValid):
-            tableArray = Normalizer.normalizeTo2NF(tableArray)
-            print("\n------------- 2NF Results -------------\n")
-            FinalRelationGen.printResult(tableArray)
+                if (highestNormalization != "2NF" and isValid): # 3NF
+                    tableArray = Normalizer.normalizeTo3NF(tableArray)
+ 
+                    if (highestNormalization != "3NF" and isValid): # BCNF
+                        tableArray = Normalizer.normalizeToBCNF(tableArray)
 
-            if (highestNormalization != "2NF" and isValid):
-                tableArray = Normalizer.normalizeTo3NF(tableArray)
-                print("\n------------- 3NF Results -------------\n")
-                FinalRelationGen.printResult(tableArray)
+                        if (highestNormalization != "BCNF" and isValid): # 4NF 
+                            tableArray = Normalizer.normalizeTo4NF(tableArray)
 
-                if (highestNormalization != "3NF" and isValid):
-                    tableArray = Normalizer.normalizeToBCNF(tableArray)
-                    print("\n------------- BCNF Results -------------\n")
-                    FinalRelationGen.printResult(tableArray)
-
-                    if (highestNormalization != "BCNF" and isValid):
-                        tableArray = Normalizer.normalizeTo4NF(tableArray)
-                        print("\n------------- 4NF Results -------------\n")
-                        FinalRelationGen.printResult(tableArray)
-
-                        if (highestNormalization != "4NF" and isValid):
-                            tableArray = Normalizer.normalizeTo5NF(tableArray)
-                            print("\n------------- 5NF Results -------------\n")
-                            FinalRelationGen.printResult(tableArray)
+                            if (highestNormalization != "4NF" and isValid): # 5NF
+                                tableArray = Normalizer.normalizeTo5NF(tableArray)
 
     print("\n\n-----------PROGRAM TERMINATED-----------\n\n")
 

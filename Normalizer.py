@@ -1,5 +1,5 @@
 import InputParser
-
+import FinalRelationGen
 
 def normalizeTo1NF(tableArray, nonAtomicValues):
     #Normalize to 1NF: 
@@ -35,7 +35,9 @@ def normalizeTo1NF(tableArray, nonAtomicValues):
             if (values in dependencies.dependent):
                 tableArray[0].functionalDependencies.remove(dependencies)
         tableArray.append(InputParser.Table(tableName, primaryKeyArray, candidateKeyArray, columnArray, keyConstraintsArray))
-
+    
+    print("\n------------- 1NF Results -------------\n")
+    FinalRelationGen.printResult(tableArray)
     return tableArray
 
 def normalizeTo2NF(tableArray):
@@ -114,8 +116,8 @@ def normalizeTo2NF(tableArray):
         for columns in toRemove:
             tables.columns.remove(columns)
 
-        if (partialDependenciesAmount <= 0):
-            print("No PFD violations. Table is already in 2NF.")
+        #if (partialDependenciesAmount <= 0):
+        #    print("No PFD violations. Table is already in 2NF.")
         
         checkTable(tableArray, i)
         i += 1
@@ -123,6 +125,8 @@ def normalizeTo2NF(tableArray):
     if len(newTableArray) > 0:
         tableArray += newTableArray
 
+    print("\n------------- 2NF Results -------------\n")
+    FinalRelationGen.printResult(tableArray)
     return tableArray
 
 def normalizeTo3NF(tableArray) -> bool:
@@ -166,13 +170,14 @@ def normalizeTo3NF(tableArray) -> bool:
                 tables.columns.remove(values)
             tables.functionalDependencies.pop(index)
         # don't have to mess with the primary key because the value was already not inside the primary key
-        if (amount == 0):
-            print("No TFD violations. Table is already in 3NF.")  
+        #if (amount == 0):
+        #    print("No TFD violations. Table is already in 3NF.")  
 
     if len(newTableArray) > 0:
         tableArray += newTableArray
 
-
+    print("\n------------- 3NF Results -------------\n")
+    FinalRelationGen.printResult(tableArray)
     return tableArray
 
 def normalizeToBCNF(tableArray) -> bool:
@@ -229,12 +234,14 @@ def normalizeToBCNF(tableArray) -> bool:
                     break
                 j += 1
 
-        if amount == 0:
-            print("Table is already in BCNF")   
+        #if amount == 0:
+        #    print("Table is already in BCNF")   
 
         if len(newTableArray) > 0:
             tableArray += newTableArray
-    
+
+    print("\n------------- BCNF Results -------------\n")
+    FinalRelationGen.printResult(tableArray)
     return tableArray
 
 def normalizeTo4NF(tableArray):
@@ -266,8 +273,8 @@ def normalizeTo4NF(tableArray):
                 keyConstraintsArray.append(InputParser.FunctionalDependency(dependencies.determinant, [dependencies.dependent[1]]))
                 newTableArray.append(InputParser.Table(tableName, primaryKeyArray, candidateKeyArray, columnArray, keyConstraintsArray))
             i += 0
-        if amount == 0:
-            print("Table is already in 4NF") 
+        #if amount == 0:
+        #    print("Table is already in 4NF") 
 
         # now we must remove the located MVDs
         # a -> b | > c we remove c
@@ -281,13 +288,19 @@ def normalizeTo4NF(tableArray):
 
     if len(newTableArray) > 0:
         tableArray += newTableArray
+
+    print("\n------------- 4NF Results -------------\n")
+    FinalRelationGen.printResult(tableArray)
     return tableArray
 
 def normalizeTo5NF(tableArray):
     #Normalize to 5NF: 
     #Data Input: User provided data instances for each base relation. 
     #Approach: Decompose each base relation into its sub-relation projection if a non-trivial join dependency is identified. 
-    return
+    
+    print("\n------------- 5NF Results -------------\n")
+    FinalRelationGen.printResult(tableArray)
+    return tableArray
 
 def identifyPartialDependency(primaryKey, candidateKey, functionalDependency) -> bool:
     #print("Checking: ", functionalDependency, primaryKey, candidateKey)
