@@ -15,9 +15,12 @@ def printResult(tableArray):
 
             print("\tFD " + str(i) + ")\t", end = '')
             print(dependencies.determinant, end = "")
-            print(" --> ", end ="")
+            if(dependencies.MVD == True):
+                print(" -->> ", end ="")
+            else:
+                print(" --> ", end ="")
             print(dependencies.dependent, end = "")
-            print(" - MVD: ", dependencies.MVD, end = "")
             print()
             i += 1
+        print()
     return

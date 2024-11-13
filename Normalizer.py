@@ -47,6 +47,7 @@ def normalizeTo2NF(tableArray):
     
     # will append to table array after done
     newTableArray = []
+    totalpartialDependenciesAmount = 0
     for tables in tableArray:
         i = 0
         #print(tables.tableName)
@@ -65,9 +66,24 @@ def normalizeTo2NF(tableArray):
                 tableName = dependencies.determinant[0] + dependencies.dependent[0] + "Data"
                 columnArray += dependencies.determinant
                 columnArray += dependencies.dependent
+                
+
                 primaryKeyArray += dependencies.determinant
                 keyConstraintsArray.append(InputParser.FunctionalDependency(dependencies.determinant, dependencies.dependent, dependencies.MVD))
+                # check if there are any transitive dependencies to carry over to the new table
+                l = 0
+                for dependencies2 in tables.functionalDependencies:
+                    #print("new TFD?", dependencies2.determinant, dependencies.dependent)
+                    if searchArrayUnordered(dependencies2.determinant, dependencies.dependent):
+                        #print("adding new TFD")
+                        keyConstraintsArray.append(InputParser.FunctionalDependency(dependencies2.determinant, dependencies2.dependent, dependencies2.MVD))
+                        # mark down the index of this FD for later removal
+                        #print("appending: ", l)
+                        checkDependencies.append(l)
+                    l += 1
                 skipped = 0
+
+                # check over the tables we already know we will add
                 if(len(newTableArray) > 0):
                     for newTables in newTableArray:
                         # if this table will have the same primary key as an already created table, just bundle them together
@@ -75,21 +91,23 @@ def normalizeTo2NF(tableArray):
                         if newTables.primaryKey == primaryKeyArray:
                             newTables.candidateKey = uniqueArrayAdd(newTables.candidateKey, candidateKeyArray)
                             newTables.columns = uniqueArrayAdd(newTables.columns, columnArray)
+                            # check if this is the same FD as another table
                             if keyConstraintsArray[0].determinant == newTables.functionalDependencies[0].determinant and keyConstraintsArray[0].dependent == newTables.functionalDependencies[0].dependent:
                                 break
                             else:
-                                newTables.functionalDependencies.append(keyConstraintsArray[0])
+                                for FDs in keyConstraintsArray:
+                                    newTables.functionalDependencies.append(FDs)
                                 break
                         else:
                             skipped += 1
+
+                # this is the first new table
                 else:
                     newTableArray.append(InputParser.Table(tableName, primaryKeyArray, candidateKeyArray, columnArray, keyConstraintsArray))
-                
+                # add in our final table that has checked through all the new tables
                 if skipped == len(newTableArray) and len(newTableArray) > 0:
                     newTableArray.append(InputParser.Table(tableName, primaryKeyArray, candidateKeyArray, columnArray, keyConstraintsArray))
 
-
-                #print("New table: ", tableName)
                 
                 # mark down the index of this FD so we can remove it later
                 checkDependencies.append(j)
@@ -98,9 +116,19 @@ def normalizeTo2NF(tableArray):
             
         # sort it high->low so they remain in the correct position when deleting
         checkDependencies = sorted(checkDependencies, reverse=True)
+        #remove duplicates
+        test = []
+        for nums in checkDependencies:
+            if nums not in test:
+                test.append(nums)
+        checkDependencies = test       
         # remove each partial FD
         for index in checkDependencies:
+            #print(checkDependencies)
+            #print(tables.tableName, "REMOVING : ", tables.functionalDependencies[index].determinant, tables.functionalDependencies[index].dependent)
+
             tables.functionalDependencies.pop(index)
+
 
         toRemove = []
         for columns in tables.columns:
@@ -114,19 +142,23 @@ def normalizeTo2NF(tableArray):
                 toRemove.append(columns)
                 
         for columns in toRemove:
+            #print(tables.tableName, " TO REMOVE ", columns)
             tables.columns.remove(columns)
-
-        #if (partialDependenciesAmount <= 0):
-        #    print("No PFD violations. Table is already in 2NF.")
         
-        checkTable(tableArray, i)
+        #checkTable(tableArray, i)
+        totalpartialDependenciesAmount += partialDependenciesAmount
         i += 1
 
-    if len(newTableArray) > 0:
+    if len(newTableArray) == 0:
+        print("\n\n-----------Tables are already in 2NF-----------\n\n")
+    else:
         tableArray += newTableArray
+        # ensure the tables are correct
+        for i in range(len(tableArray)):
+            checkTable(tableArray, i)
+        print("\n------------- 2NF Results -------------\n")
+        FinalRelationGen.printResult(tableArray)
 
-    print("\n------------- 2NF Results -------------\n")
-    FinalRelationGen.printResult(tableArray)
     return tableArray
 
 def normalizeTo3NF(tableArray) -> bool:
@@ -143,6 +175,7 @@ def normalizeTo3NF(tableArray) -> bool:
             # ex: A -> B, B-> C
             # we will do this by checking for functional dependencies where the determinant is not a part of the primary key
             if searchArrayUnordered(dependencies.determinant, tables.primaryKey) == False:
+                print("LOCATED TFD: ", tables.tableName, dependencies.determinant, dependencies.dependent, tables.primaryKey)
                 amount += 1
                 primaryKeyArray = []
                 candidateKeyArray = []
@@ -155,30 +188,82 @@ def normalizeTo3NF(tableArray) -> bool:
                 primaryKeyArray += dependencies.determinant
                 keyConstraintsArray.append(InputParser.FunctionalDependency(dependencies.determinant, dependencies.dependent, dependencies.MVD))
                 newTableArray.append(InputParser.Table(tableName, primaryKeyArray, candidateKeyArray, columnArray, keyConstraintsArray))
-
                 checkDependencies.append(j)
             j += 1
 
         checkDependencies = sorted(checkDependencies, reverse=True)
+                # check for columns and functional dependencies that need to be switched around
+        k = 0
+        for newTables in newTableArray:
+            #print(newTables.columns)
+
+            m = 0
+            # if we have duplicate values across multiple tables
+            for newTables2 in newTableArray:
+                # dont search the same tables over each other
+                if newTables.tableName != newTables2.tableName:
+                    # loop over every column value
+                    for values in newTables2.columns:
+                        if values in newTables.columns:
+                            # only remove this value if it is not in the primary key
+                            if values not in newTables2.primaryKey and values not in newTables.primaryKey:
+                                # remove this value from the already existing new table
+                                if (values in newTableArray[k].columns):
+                                    print(newTableArray[k].tableName, " : Removing from columns: ", values)
+                                    newTableArray[k].columns.remove(values)
+                                for s in range(len(newTableArray[k].functionalDependencies)):
+                                    if values in newTableArray[k].functionalDependencies[s].dependent:
+                                        print("Removing from FD: ", values)
+                                        newTableArray[k].functionalDependencies[s].dependent.remove(values)
+                m += 1
+            k += 1
 
         # remove each TFD from the existing table
         for index in checkDependencies:
             for values in tables.functionalDependencies[index].determinant:
-                tables.columns.remove(values)
+                for newTables in newTableArray:
+                    if values not in newTables.primaryKey:
+                        #print("1 REMOVE from ", tables.tableName, values, tables.columns)
+                        tables.columns.remove(values)
+                        break
             for values in tables.functionalDependencies[index].dependent:
+                #print("REMOVE from ", tables.tableName, values, tables.columns)
                 tables.columns.remove(values)
             tables.functionalDependencies.pop(index)
+
+        # remove values of the transitive dependency from the original FD
+        for newTables in newTableArray:
+            z = 0
+            # check every value of this dependent against the functional dependency of the new table 
+            fakeFD = []
+            for dependents in tables.functionalDependencies[0].dependent:
+                #print("? ", dependents, newTables.functionalDependencies[0].dependent)
+                if dependents in newTables.functionalDependencies[0].dependent:
+                    #print(tables.tableName," REMOVED ", dependents, " FROM ", tables.functionalDependencies[0].dependent)
+                    fakeFD.append(dependents)
+
+            for values1 in fakeFD:
+                if values1 not in tables.columns:
+                    #print("2 REMOVE from ", tables.tableName, values1, tables.functionalDependencies[0].dependent, tables.columns)
+                    tables.functionalDependencies[0].dependent.remove(values1)
+            z += 1
+
         # don't have to mess with the primary key because the value was already not inside the primary key
         #if (amount == 0):
         #    print("No TFD violations. Table is already in 3NF.")  
 
-    if len(newTableArray) > 0:
-        tableArray += newTableArray
 
-    print("\n------------- 3NF Results -------------\n")
-    FinalRelationGen.printResult(tableArray)
+    if len(newTableArray) == 0:
+        print("\n\n-----------Tables are already in 3NF-----------\n\n")
+    else:
+        tableArray += newTableArray
+        for y in range(len(tableArray)):
+            checkTable(tableArray, y)
+        print("\n------------- 3NF Results -------------\n")
+        FinalRelationGen.printResult(tableArray)
     return tableArray
 
+#EPOZZO REDO
 def normalizeToBCNF(tableArray) -> bool:
     #Normalize to BCNF: 
     #Data Input: The functional dependency set of each base relation. 
@@ -235,11 +320,15 @@ def normalizeToBCNF(tableArray) -> bool:
         #if amount == 0:
         #    print("Table is already in BCNF")   
 
-        if len(newTableArray) > 0:
-            tableArray += newTableArray
 
-    print("\n------------- BCNF Results -------------\n")
-    FinalRelationGen.printResult(tableArray)
+    if len(newTableArray) == 0:
+        print("\n\n-----------Tables are already in BCNF-----------\n\n")
+    else:
+        tableArray += newTableArray
+        for j in range(len(tableArray)):
+            checkTable(tableArray, j)
+        print("\n------------- BCNF Results -------------\n")
+        FinalRelationGen.printResult(tableArray)
     return tableArray
 
 def normalizeTo4NF(tableArray):
@@ -248,47 +337,58 @@ def normalizeTo4NF(tableArray):
     #Approach: Create a separate relation for each MVD violation.     
     newTableArray = []
     for tables in tableArray:
-        amount = 0
         i = 0
-        MVDindex = []
         primaryKeyArray = []
         candidateKeyArray = []
         keyConstraintsArray = []
         columnArray = []
         
         # loop over every functional dependency
+        x = 0
         for dependencies in tables.functionalDependencies:
             # check if this dependency has an mvd
             if dependencies.MVD == True:
-                amount += 1
-                MVDindex.append(i)
 
+                tableName = dependencies.dependent[0] + "Data"
+                # now we will create the new table with the first MVD dependent
+                columnArray.append(dependencies.dependent[0])
+                columnArray += dependencies.determinant
+                primaryKeyArray += dependencies.determinant
+                keyConstraintsArray.append(InputParser.FunctionalDependency(dependencies.determinant, [dependencies.dependent[0]]))
+                newTableArray.append(InputParser.Table(tableName, primaryKeyArray, candidateKeyArray, columnArray, keyConstraintsArray))
+                
+                primaryKeyArray = []
+                candidateKeyArray = []
+                keyConstraintsArray = []
+                columnArray = []
                 tableName = dependencies.dependent[1] + "Data"
-                # we will create the new table with the second MVD dependent
+                # now we will create the new table with the second MVD dependent
                 columnArray.append(dependencies.dependent[1])
                 columnArray += dependencies.determinant
                 primaryKeyArray += dependencies.determinant
                 keyConstraintsArray.append(InputParser.FunctionalDependency(dependencies.determinant, [dependencies.dependent[1]]))
                 newTableArray.append(InputParser.Table(tableName, primaryKeyArray, candidateKeyArray, columnArray, keyConstraintsArray))
+
+                tables.columns.remove(dependencies.dependent[1])
+                tables.columns.remove(dependencies.dependent[0])
+                tables.functionalDependencies.pop(x)
+                x += 1
             i += 0
-        #if amount == 0:
-        #    print("Table is already in 4NF") 
+            
 
-        # now we must remove the located MVDs
-        # a -> b | > c we remove c
-        for dependencies in keyConstraintsArray:
-            tables.columns.remove(dependencies.dependent[0])
-
-        MVDindex = sorted(MVDindex, reverse=True)
-        # delete the second value in each MVD
-        for index in MVDindex:
-            tables.functionalDependencies[index].dependent.pop(1)
-
-    if len(newTableArray) > 0:
+    if len(newTableArray) == 0:
+        print("\n\n-----------Tables are already in 4NF-----------\n\n")
+    else:
         tableArray += newTableArray
+        for j in range(len(tableArray)):
+            checkTable(tableArray, j)
+        for i in range(len(tableArray)):
+            for j in range(len(tableArray[i].functionalDependencies)):
+                tableArray[i].functionalDependencies[j].MVD = False
 
-    print("\n------------- 4NF Results -------------\n")
-    FinalRelationGen.printResult(tableArray)
+        print("\n------------- 4NF Results -------------\n")
+        FinalRelationGen.printResult(tableArray)
+
     return tableArray
 
 def normalizeTo5NF(tableArray):
@@ -306,13 +406,13 @@ def identifyPartialDependency(primaryKey, candidateKey, functionalDependency) ->
     partiallyInPrimaryKey = searchArrayUnordered(functionalDependency, primaryKey)
     isInCandidateKey = searchArrayUnordered(functionalDependency, candidateKey)
 
-    if partiallyInPrimaryKey == True and isInCandidateKey == False and (len(primaryKey) > len(functionalDependency)):
-        #print("Found")
+    # there is a partial dependency if the left side of the FD is only part of or not at all in the primary key
+    if (partiallyInPrimaryKey == True and isInCandidateKey == False and (len(primaryKey) > len(functionalDependency))):
         return True
     else:
         return False
     
-# return if the unordered elements of the subArray are inside the Array
+# return if the unordered elements of the subArray are inside the Array 
 def searchArrayUnordered(subArray, Array):
     amount = 0
     if len(subArray) > len(Array):
@@ -334,11 +434,12 @@ def searchArrayUnordered(subArray, Array):
 def checkTable(tableArray, index):
     # if there are no items left then delete this table
     #print("Checking: ", tableArray[index].tableName, tableArray[index].primaryKey)
-    if len(tableArray[index].columns) == 0:
+    #print(len(tableArray), index)
+    #if len(tableArray[index].columns) == 0:
         #print("Deleting: ", tableArray[index].columns)
-        tableArray.pop(index)
-        return tableArray
-    
+        #tableArray.pop(index)
+        #return tableArray
+
     # check if it needs a new primary key
     if (len(tableArray[index].primaryKey) == 0):
         newKey = []
@@ -350,6 +451,17 @@ def checkTable(tableArray, index):
         #print("new primary key: ", tableArray[index].primaryKey)
         return tableArray
     
+    # ensure all the values in the FDs are in the columns
+    uniqueVals = []
+    for FDs in tableArray[index].functionalDependencies:
+        for dependencies in FDs.dependent:
+            if dependencies not in uniqueVals:
+                uniqueVals.append(dependencies)
+        for determinants in FDs.determinant:
+            if determinants not in uniqueVals:
+                uniqueVals.append(determinants)
+
+    tableArray[index].columns = uniqueVals
     return tableArray
 
 def uniqueArrayAdd(array1, array2):

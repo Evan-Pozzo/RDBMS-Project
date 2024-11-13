@@ -9,8 +9,9 @@ import FinalRelationGen
 def main():
 
     # we will loop the program as long as the user has new tables to input
+    isValid = True
+
     while (True):
-        isValid = True
         # tableArray is an array of Table objects
         # each table object has an array for  column names, primary key, candidate keys, and functionalDependency objects
         # each functionalDependency object has a determinant and a dependency array
@@ -20,26 +21,41 @@ def main():
             break
 
         FinalRelationGen.printResult(tableArray)
-
+        # ensure we were given a valid normalization level
+        if(highestNormalization == "1NF" or highestNormalization == "2NF" or highestNormalization == "3NF" or highestNormalization == "BCNF" or highestNormalization == "4NF" or highestNormalization == "5NF"):
+            isValid = True
+        else:
+            isValid = False
+            print("Enter a valid highest normalization value")
+            break
+        
         if (isValid): # 1NF
-            tableArray = Normalizer.normalizeTo1NF(tableArray, nonAtomicValuesArray)
-            if (highestNormalization != "1NF" and isValid): # 2NF
+            if(len(nonAtomicValuesArray) > 0):
+                tableArray = Normalizer.normalizeTo1NF(tableArray, nonAtomicValuesArray)
+            else:
+                print("\n\n-----------Table is already in 1NF-----------\n\n")
+                
+            if (highestNormalization != "1NF"): # 2NF
                 tableArray = Normalizer.normalizeTo2NF(tableArray)
 
-                if (highestNormalization != "2NF" and isValid): # 3NF
+                if (highestNormalization != "2NF"): # 3NF
                     tableArray = Normalizer.normalizeTo3NF(tableArray)
  
-                    if (highestNormalization != "3NF" and isValid): # BCNF
+                    if (highestNormalization != "3NF"): # BCNF
                         tableArray = Normalizer.normalizeToBCNF(tableArray)
 
-                        if (highestNormalization != "BCNF" and isValid): # 4NF 
+                        if (highestNormalization != "BCNF"): # 4NF 
                             tableArray = Normalizer.normalizeTo4NF(tableArray)
 
-                            if (highestNormalization != "4NF" and isValid): # 5NF
+                            if (highestNormalization != "4NF"): # 5NF
                                 tableArray = Normalizer.normalizeTo5NF(tableArray)
+            if(isValid):
+                print("-----------FINAL OUTPUT-----------\n")
+                FinalRelationGen.printResult(tableArray)
+
 
     print("\n\n-----------PROGRAM TERMINATED-----------\n\n")
-
+    
     return
 
 if __name__ == '__main__':
